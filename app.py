@@ -1,5 +1,5 @@
 import os, csv
-from flask import Flask, request, jsonify, render_template, request
+from flask import Flask, request, jsonify, render_template, redirect, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 
@@ -9,15 +9,16 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 # Database
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'db.sqlite')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-# Init db
+# Init employee db
 db = SQLAlchemy(app)
 # Init ma
 ma = Marshmallow(app)
 
+
 # Should I create a global fields tuple??
 #fields = ('first', 'last', 'position', 'email', 'location', 'ringCentral', 'workPhone', 'mobilePhone')
 
-# Employee Class and Constructor
+# Employee Class and Constructor for database
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first = db.Column(db.String(50))
@@ -49,6 +50,11 @@ class EmployeeSchema(ma.Schema):
 employee_schema = EmployeeSchema(strict=True)
 employees_schema = EmployeeSchema(many=True, strict=True)
 
+# homepage
+@app.route('/index') 
+def index():
+    return render_template('upload.html')
+
 #Create Employee
 @app.route('/employee', methods=['POST'])
 def add_employee():
@@ -68,40 +74,55 @@ def add_employee():
 
     return employee_schema.jsonify(new_employee)
            
-#Create Employees from CSV
-@app.route('/index')
-def index():
-    return render_template('upload.html')
+def allowed_file(filename):
+    allowedExtensions = {'csv'}
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowedExtensions
 
+#Create Employees from CSV
 @app.route('/upload_employees', methods=['POST'])
 def upload():
-    file = request.files['inputFile'].read().decode('utf8').split('\n')
-    reader = csv.DictReader(file, delimiter=',')
+    file = request.files['inputFile']
 
-    fields = ('first', 'last', 'position', 'email', 'location', 'ringCentral', 'workPhone', 'mobilePhone')
+    # If no file selected
+    if file.filename == '':
+        return '<h1>No file selected</h1>'
 
-    for row in reader:
+    # Filetype check
+    if file and allowed_file(file.filename):
 
-        # Find empty fields in CSV:
-        for val in fields:
-            if row[val] is "":
-                row[val] = None
+        csvFile = file.read().decode().split('\n')
+        reader = csv.DictReader(csvFile, delimiter=',')
 
-        first = row['first'] #first = row[fields[0]]
-        last = row['last']
-        position = row['position']
-        email = row['email']
-        location = row['location']
-        ringCentral = row['ringCentral']
-        workPhone = row['workPhone']
-        mobilePhone = row['mobilePhone']
+        fields = ('first', 'last', 'position', 'email', 'location', 'ringCentral', 'workPhone', 'mobilePhone')
 
-        new_employee = Employee(first, last, position, email, location, ringCentral, workPhone, mobilePhone)
+        for row in reader:
 
-        db.session.add(new_employee)
-        db.session.commit()
-        
-    return '<h1>CSV Successfully Parsed</h1>'
+            # Find empty fields in CSV:
+            for val in fields:
+                if row[val] is "":
+                    row[val] = None
+
+            first = row['first'] #first = row[fields[0]]
+            last = row['last']
+            position = row['position']
+            email = row['email']
+            location = row['location']
+            ringCentral = row['ringCentral']
+            workPhone = row['workPhone']
+            mobilePhone = row['mobilePhone']
+
+            new_employee = Employee(first, last, position, email, location, ringCentral, workPhone, mobilePhone)
+
+            db.session.add(new_employee)
+            db.session.commit()
+            
+        request.close()
+
+        return '<h1>CSV Successfully Parsed</h1>'
+    
+    # Invalid filetype
+    else:
+        return '<h1>Invalid filetype</h1>'
 
 # Get Single Employee
 @app.route('/employee/<id>', methods=['GET'])
