@@ -70,11 +70,6 @@ employees_schema = EmployeeSchema(many=True)
 def index():
     return render_template('upload.html')
 
-# homepage
-@app.route('/index') 
-def index():
-    return render_template('upload.html')
-
 #Create Employee
 @app.route('/employee', methods=['POST'])
 def add_employee():
