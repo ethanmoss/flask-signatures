@@ -16,6 +16,7 @@ db = SQLAlchemy(app)
 # Init marshmallow
 ma = Marshmallow(app)
 
+
 # Should I create a global fields tuple??
 #fields = ('first', 'last', 'position', 'email', 'location', 'ringCentral', 'workPhone', 'mobilePhone')
 
@@ -63,6 +64,11 @@ class EmployeeSchema(Schema):
 #Init Schema
 employee_schema = EmployeeSchema()
 employees_schema = EmployeeSchema(many=True)
+
+# homepage
+@app.route('/index') 
+def index():
+    return render_template('upload.html')
 
 # homepage
 @app.route('/index') 
