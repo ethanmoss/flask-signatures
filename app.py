@@ -1,7 +1,7 @@
 import os, csv
 from pprint import pprint
 from flask import Flask, request, jsonify, render_template
-from marshmallow import Schema, fields, ValidationError
+from marshmallow import Schema, fields, post_load, ValidationError
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 
@@ -16,11 +16,7 @@ db = SQLAlchemy(app)
 # Init marshmallow
 ma = Marshmallow(app)
 
-
-# Should I create a global fields tuple??
-#fields = ('first', 'last', 'position', 'email', 'location', 'ringCentral', 'workPhone', 'mobilePhone')
-
-# Employee Class and Constructor for database
+# Employee Class and Constructor
 class Employee(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     first = db.Column(db.String(50))
@@ -54,12 +50,11 @@ class EmployeeSchema(Schema):
     mobilePhone = fields.Integer(allow_none=True)
 
     class Meta:
-        fields = ('id', 'first', 'last', 'position', 'email', 'location', 'ringCentral', 'workPhone', 'mobilePhone')
-        #fields = fields
+        fields = ('id', 'first', 'last', 'position', 'email', 'location', 'ringCentral', 'workPhone', 'mobilePhone') 
 
-    # @post_load
-    # def create_employee(self, data):
-    #     return Employee(**data)
+    @post_load
+    def create_employee(self, data, **kwargs):
+        return Employee(**data)
 
 #Init Schema
 employee_schema = EmployeeSchema()
@@ -73,7 +68,7 @@ def index():
 #Create Employee
 @app.route('/employee', methods=['POST'])
 def add_employee():
-    first = request.json['first'] #first = request.json[fields[0]]
+    first = request.json['first'] 
     last = request.json['last']
     position = request.json['position']
     email = request.json['email']
@@ -120,16 +115,19 @@ def upload():
 
             # Schema Validation:
             try:
-                result = employee_schema.load(dict(row))
+                new_employee = employee_schema.load(dict(row))
             except ValidationError as err:
                 print(row['first'] + ' ' + row['last'] + '\n' + str(err.messages))
                 continue
 
-            new_employee = Employee(**row)
+            #TODO Update database from CSV
 
+            # Add new employee to session:
             db.session.add(new_employee)
-            db.session.commit()
-            
+
+        # Commit session to db:    
+        db.session.commit()
+
         request.close()
 
         return '<h1>CSV Successfully Parsed</h1>'
@@ -156,7 +154,7 @@ def get_employees():
 def update_employee(id):
     employee = Employee.query.get(id)
 
-    first = request.json['first'] #first = request.json[fields[0]]
+    first = request.json['first'] 
     last = request.json['last']
     position = request.json['position']
     email = request.json['email']
