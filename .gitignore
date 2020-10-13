@@ -1,3 +1,9 @@
+# Ignore MacOS system files
+.DS_store
+
+# Ignore VS Code Preferences
+.vscode/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

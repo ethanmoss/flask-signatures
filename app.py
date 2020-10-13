@@ -66,7 +66,7 @@ def index():
     return render_template('upload.html')
 
 #Create Employee
-@app.route('/employee', methods=['POST'])
+@app.route('/create_employee', methods=['POST'])
 def add_employee():
     first = request.json['first'] 
     last = request.json['last']
@@ -82,7 +82,7 @@ def add_employee():
     db.session.add(new_employee)
     db.session.commit()
 
-    return employee_schema.jsonify(new_employee)
+    return "<h1>SUCCESS</h1>"
            
 def allowed_file(filename):
     allowedExtensions = {'csv'}
@@ -121,7 +121,7 @@ def upload():
                 continue
 
             #TODO Update database from CSV
-
+            
             # Add new employee to session:
             db.session.add(new_employee)
 

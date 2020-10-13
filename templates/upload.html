@@ -3,10 +3,23 @@
     <head></head>
     <body>
 
-        <h1>File Input</h1>
+        <h1>Add New Employee</h1>
+        <form method="POST" action="/create_employee" enctype="multipart/form-data">
+            First Name: <input type="text" name="first"><br><br>
+            Last Name: <input type="text" name="last"><br><br>
+            Position: <input type="text" name="position"><br><br>
+            Email: <input type="email" name="email"><br><br>
+            Location: <input type="text" name="location"><br><br>
+            Ring Central: <input type="number" name="ringCentral"><br><br>
+            Work Phone: <input type="number" name="workPhone"><br><br>
+            Mobile Phone: <input type="number" name="mobilePhone"><br><br>
+            <button type="submit">Submit</button>
+        </form>
+
+        <h1>CSV File Input</h1>
         <form method="POST" action="/upload_employees" enctype="multipart/form-data">
             <label for="inputFile">File Input</label>
-            <input type="file" name="inputFile"><br><br>
+            <input type="file" name="inputFile" accept=".csv"><br><br>
             <button type="submit">Submit</button>
         </form>
 
